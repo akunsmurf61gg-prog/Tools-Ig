@@ -540,7 +540,25 @@ async def admin_maintenance(data: dict):
             active_sessions[user]["log"] = "Logs wiped by Admin."
         return {"status": "success", "message": "Log Dashboard Berhasil Dibersihkan."}
     return {"status": "error", "message": "Aksi Tidak Dikenal."}
-
+@app.on_event("startup")
+async def create_default_admin():
+    if supabase:
+        try:
+            # Cek apakah user 'admin' sudah ada di database
+            res = supabase.table("bot_users").select("username").eq("username", "admin").execute()
+            if not res.data:
+                # Jika belum ada, buat otomatis
+                supabase.table("bot_users").insert({
+                    "username": "admin",
+                    "password": "123", # Ganti dengan password pilihan Anda
+                    "email": "admin@system.com",
+                    "license": "ADMIN-KEY",
+                    "expiry": "2099-12-31",
+                    "last_error": "None"
+                }).execute()
+                print("Default admin account created successfully!")
+        except Exception as e:
+            print(f"Failed to create default admin: {e}")
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
     path = request.url.path
