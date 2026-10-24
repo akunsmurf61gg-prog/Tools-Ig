@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELITE ACCESS - AUTH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body { 
+            background: #050505; 
+            color: #e0e0e0; 
+            font-family: 'JetBrains Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glass-panel { 
+            background: rgba(10, 10, 10, 0.9); 
+            border: 1px solid rgba(6, 182, 212, 0.2); 
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-cyber {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #1a1a1a;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .input-cyber:focus {
+            border-color: #06b6d4;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+            outline: none;
+        }
+
+        .btn-cyan {
+            background: #06b6d4;
+            color: #000;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cyan:hover {
+            background: #22d3ee;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-top: 3px solid #000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .hidden-form { display: none; }
+        .tab-active { color: #06b6d4; border-bottom: 2px solid #06b6d4; }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="glass-panel w-full max-w-md rounded-3xl p-8 space-y-8">
+        
+        <div class="text-center">
+            <div class="inline-flex w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-700 rounded-2xl items-center justify-center shadow-lg mb-4">
+                <i class="fas fa-rocket text-2xl text-black"></i>
+            </div>
+            <h1 class="text-xl font-black tracking-tighter uppercase">Elite <span class="text-cyan-500">Access</span></h1>
+            <p class="text-[9px] text-gray-600 tracking-[0.4em] uppercase mt-1">Security Authentication</p>
+        </div>
+
+        <div class="flex border-b border-gray-900 text-[10px] font-bold">
+            <button id="t-login" onclick="switchTab('login')" class="flex-1 py-3 tab-active transition-all">LOGIN PORTAL</button>
+            <button id="t-reg" onclick="switchTab('reg')" class="flex-1 py-3 text-gray-600 transition-all">NEW REGISTER</button>
+        </div>
+
+        <div id="f-login" class="space-y-4 animate-in fade-in duration-500">
+            <div class="space-y-2">
+                <label class="text-[9px] text-gray-500 ml-1">IDENTIFICATION</label>
+                <input id="l_u" type="text" placeholder="Username" class="input-cyber w-full p-4 rounded-xl text-xs">
+            </div>
+            <div class="space-y-2">
+                <label class="text-[9px] text-gray-500 ml-1">ACCESS CODE</label>
+                <input id="l_p" type="password" placeholder="Password" class="input-cyber w-full p-4 rounded-xl text-xs">
+            </div>
+            <div class="flex justify-between items-center px-1">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="remember_me" class="w-3 h-3 accent-cyan-500">
+                    <label for="remember_me" class="text-[9px] text-gray-500 uppercase">Remember Me</label>
+                </div>
+                <a href="#" onclick="handleForgotPassword()" class="text-[9px] text-cyan-500 hover:text-white uppercase font-bold tracking-tighter">Forgot Password?</a>
+            </div>
+            
+            <button id="b-login" onclick="handleAuth('login')" class="btn-cyan w-full py-4 rounded-xl text-xs mt-4">
+                <span id="txt-login">Authorize Access</span>
+            </button>
+        </div>
+
+        <div id="f-reg" class="hidden-form space-y-4 animate-in fade-in duration-500">
+            <div class="grid grid-cols-2 gap-2">
+                <input id="r_u" type="text" placeholder="Username" class="input-cyber p-4 rounded-xl text-xs">
+                <input id="r_p" type="password" placeholder="Password" class="input-cyber p-4 rounded-xl text-xs">
+            </div>
+            <input id="r_e" type="email" placeholder="Email Address" class="input-cyber w-full p-4 rounded-xl text-xs">
+            <input id="r_k" type="text" placeholder="License Key (ELITE-XXXX)" class="input-cyber w-full p-4 rounded-xl text-xs text-cyan-400 font-bold uppercase">
+            
+            <div class="bg-cyan-500/5 border border-cyan-500/10 p-4 rounded-2xl text-center">
+                <p class="text-[8px] text-gray-500 uppercase mb-3">No License? Contact Architect:</p>
+                <div class="flex justify-center gap-8">
+                    <a href="https://wa.me/6281234567890?text=Halo%20Admin,%20saya%20ingin%20beli%20License%20Key%20Elite%20Access" 
+                       target="_blank" class="text-green-500 text-xl hover:scale-110 transition">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://t.me/UsernameTelegramAnda" 
+                       target="_blank" class="text-blue-400 text-xl hover:scale-110 transition">
+                        <i class="fab fa-telegram"></i>
+                    </a>
+                    <a href="https://instagram.com/UsernameIGAnda" 
+                       target="_blank" class="text-pink-500 text-xl hover:scale-110 transition">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+
+            <button id="b-reg" onclick="handleAuth('register')" class="btn-cyan w-full py-4 rounded-xl text-xs">
+                <span id="txt-reg">Activate Identity</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        function switchTab(t) {
+            const isLogin = t === 'login';
+            document.getElementById('f-login').classList.toggle('hidden-form', !isLogin);
+            document.getElementById('f-reg').classList.toggle('hidden-form', isLogin);
+            
+            document.getElementById('t-login').className = isLogin ? 'flex-1 py-3 tab-active' : 'flex-1 py-3 text-gray-600';
+            document.getElementById('t-reg').className = !isLogin ? 'flex-1 py-3 tab-active' : 'flex-1 py-3 text-gray-600';
+        }
+        // FUNGSI LUPA PASSWORD: Ambil link dari API
+        async function handleForgotPassword() {
+            try {
+                const res = await fetch('/api/admin_contact');
+                const data = await res.json();
+                if (data.whatsapp) {
+                    window.open(data.whatsapp, '_blank');
+                } else {
+                    alert("Kontak Admin tidak tersedia.");
+                }
+            } catch (e) {
+                alert("Gagal menghubungkan ke server.");
+            }
+        }
+        async function handleAuth(type) {
+            const btn = document.getElementById(type === 'login' ? 'b-login' : 'b-reg');
+            const txt = document.getElementById(type === 'login' ? 'txt-login' : 'txt-reg');
+            const original = txt.innerText;
+            // Ambil status checkbox remember
+            const remember = document.getElementById('remember_me')?.checked || false;
+            const payload = type === 'login' ? 
+                {username: l_u.value, password: l_p.value} : 
+                {username: r_u.value, password: r_p.value, email: r_e.value, key: r_k.value};
+
+            if(!payload.username || !payload.password) return alert("Missing Credentials!");
+
+            btn.disabled = true;
+            txt.innerHTML = `<span class="spinner"></span> AUTHENTICATING...`;
+
+            try {
+                const res = await fetch(`/api/${type}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    if(type === 'register') { 
+                        alert('SUCCESS: Identity Activated.'); 
+                        switchTab('login'); 
+                    } else { 
+                        document.cookie = `session_user=${l_u.value}; path=/`; 
+                        window.location.href = "/"; 
+                    }
+                } else { 
+                    alert('DENIED: ' + data.message); 
+                }
+            } catch (e) { 
+                alert('ERROR: Connection Lost'); 
+            } finally {
+                btn.disabled = false;
+                txt.innerText = original;
+            }
+        }
+    </script>
+</body>
+</html>

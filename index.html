@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INSTA-ELITE V6.1 - Multi Account</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #080808; color: #ddd; font-family: monospace; }
+        .glass { background: #111; border: 1px solid #222; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body class="p-4">
+    <div class="max-w-6xl mx-auto space-y-4">
+        <div class="glass p-5 rounded-xl border-l-4 border-yellow-500 flex justify-between items-center">
+            <h1 class="text-yellow-500 font-bold italic uppercase tracking-tighter">INSTA-ELITE ARCHITECT V6.1</h1>
+            <div class="text-[10px] text-green-500 animate-pulse font-bold">● SYSTEM ACTIVE</div>
+        </div>
+    
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="glass p-5 rounded-xl space-y-3 border-t-2 border-blue-500">
+                <h2 class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Add New Account</h2>
+                <input type="text" id="new_user" placeholder="Username / Email" class="w-full bg-black p-2 rounded border border-gray-800 text-xs text-white outline-none focus:border-blue-500">
+                <input type="password" id="new_pass" placeholder="Password" class="w-full bg-black p-2 rounded border border-gray-800 text-xs text-white outline-none focus:border-blue-500">
+                <button onclick="addAccount()" id="btnAdd" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded text-[10px] font-bold uppercase transition">Login & Save</button>
+            </div>
+
+            <div class="glass p-5 rounded-xl md:col-span-2 overflow-hidden flex flex-col border-t-2 border-gray-700">
+                <h2 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Account Database</h2>
+                <div class="overflow-y-auto max-h-40">
+                    <table class="w-full text-left text-[10px] border-collapse">
+                        <thead>
+                            <tr class="text-gray-500 border-b border-gray-800">
+                                <th class="pb-2">USERNAME</th>
+                                <th class="pb-2 text-center">STATUS</th>
+                                <th class="pb-2">LAST LOG</th>
+                                <th class="pb-2 text-right">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="glass p-5 rounded-xl space-y-4">
+                <h2 class="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">Control Panel</h2>
+                <select id="acc" class="w-full bg-black p-3 rounded border border-gray-800 text-sm text-white outline-none"></select>
+                <input type="text" id="target" placeholder="@user or #hashtag" class="w-full bg-black p-3 rounded border border-gray-800 text-sm text-white outline-none">
+                <select id="action" class="w-full bg-black p-3 rounded border border-gray-800 text-sm text-white outline-none">
+                    <option value="follow_follower_target">Follow Followers Target</option>
+                    <option value="like_hashtag">Like & Komen Hashtag</option>
+                </select>
+                <div class="flex gap-2">
+                    <input type="number" id="amt" value="5" class="w-1/4 bg-black p-3 rounded border border-gray-800 text-sm text-center text-white outline-none">
+                    <input type="text" id="comm" placeholder="Comment..." class="w-3/4 bg-black p-3 rounded border border-gray-800 text-sm text-white outline-none">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="execute()" class="w-3/4 bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 rounded uppercase text-xs transition">Execute Task</button>
+                    <button onclick="stopBot()" class="w-1/4 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded uppercase text-[10px] transition">Stop</button>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 space-y-2">
+                <h2 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Activity Streams</h2>
+                <div id="streamContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto max-h-[500px] p-1">
+                    <div id="no-stream-msg" class="col-span-full glass p-10 rounded-xl text-center text-gray-700 text-[10px] uppercase">
+                        No Active Streams
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Tambah Akun Baru
+        async function addAccount() {
+            const user = document.getElementById('new_user').value;
+            const pass = document.getElementById('new_pass').value;
+            const btn = document.getElementById('btnAdd');
+            if(!user || !pass) return alert("Username & Password wajib diisi!");
+
+            btn.innerText = "LOGGING IN...";
+            btn.disabled = true;
+
+            try {
+                await fetch('/api/add_account', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                alert("Proses login dimulai. Cek status di tabel.");
+                await loadAccs();
+                document.getElementById('new_user').value = "";
+                document.getElementById('new_pass').value = "";
+            } catch (e) { alert("Server Error"); }
+            finally { btn.innerText = "LOGIN & SAVE"; btn.disabled = false; }
+        }
+
+        // 2. Load Daftar Akun ke Dropdown
+        async function loadAccs() {
+            const res = await fetch('/api/accounts');
+            const data = await res.json();
+
+            console.log("DATA:", data); // debug
+
+            const select = document.getElementById('acc');
+
+            if (!select) {
+               console.log("SELECT NOT FOUND ❌");
+               return;
+            }
+
+            select.innerHTML = '';
+
+            // ✅ HANDLE ARRAY (INI KASUS KAMU)
+            data.forEach(acc => {
+               const opt = document.createElement('option');
+               opt.value = acc.username;
+               opt.textContent = acc.username;
+               select.appendChild(opt);
+            });
+        }
+
+        // 3. Update UI (Table & Multi-Stream)
+        async function updateUI() {
+            try {
+                const resStatus = await fetch('/api/status');
+                const statusData = await resStatus.json();
+                const resAccs = await fetch('/api/get_accounts');
+                const allAccounts = Object.keys(await resAccs.json());
+
+                // 1. UPDATE TABEL DATABASE
+                const combined = Array.from(new Set([...allAccounts, ...Object.keys(statusData)]));
+                const tableBody = document.getElementById('accountTableBody');
+                tableBody.innerHTML = "";
+
+                combined.forEach(acc => {
+                const data = statusData[acc] || { log: "Offline", running: false };
+                const statusColor = data.running ? "text-green-500 animate-pulse" : "text-gray-600";
+                tableBody.insertAdjacentHTML('beforeend', `
+                      <tr class="border-b border-gray-900">
+                            <td class="py-2">@${acc}</td>
+                            <td class="py-2 text-center font-bold ${statusColor}">${data.running ? 'RUNNING' : 'IDLE'}</td>
+                            <td class="py-2 text-gray-500 truncate max-w-[120px] italic">${data.log || 'Offline'}</td>
+                            <td class="py-2 text-right flex gap-1 justify-end">
+                               <button onclick="checkAccount('${acc}')" class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-[9px]">CHECK</button>
+                               <button onclick="selectAccount('${acc}')" class="bg-gray-800 hover:bg-yellow-500 px-2 py-1 rounded text-[9px]">SELECT</button>
+                               <button onclick="deleteAccount('${acc}')" class="bg-red-900 hover:bg-red-600 px-2 py-1 rounded text-[9px]">DEL</button>
+                            </td>
+                      </tr>`);
+                });
+
+                // 2. UPDATE MULTI-STREAM GRID
+                const container = document.getElementById('streamContainer');
+                const noStreamMsg = document.getElementById('no-stream-msg');
+                const activeUsers = Object.keys(statusData).filter(user => statusData[user].running);
+
+                if (activeUsers.length === 0) {
+                    noStreamMsg.style.display = 'block';
+                } else {
+                    noStreamMsg.style.display = 'none';
+                    activeUsers.forEach(user => {
+                         let streamBox = document.getElementById(`stream-${user}`);
+                         if (!streamBox) {
+                            const html = `
+                                <div id="stream-${user}" class="glass rounded-lg border border-gray-800 overflow-hidden relative bg-black p-1">
+                                    <div class="absolute top-0 left-0 bg-black/80 px-2 py-1 text-[8px] text-yellow-500 font-bold z-10">@${user}</div>
+                                    <img id="img-${user}" class="w-full aspect-video object-contain">
+                                    <div id="log-${user}" class="p-2 text-[8px] text-gray-500 bg-black/50 truncate border-t border-gray-900">Waiting...</div>
+                                </div>`;
+                            container.insertAdjacentHTML('beforeend', html);
+                         }
+                         const data = statusData[user];
+                         if (data.ss) document.getElementById(`img-${user}`).src = "data:image/jpeg;base64," + data.ss;
+                         if (data.log) document.getElementById(`log-${user}`).innerText = data.log;
+                    });
+                }
+
+                // Hapus stream jika akun berhenti
+                container.querySelectorAll('[id^="stream-"]').forEach(box => {
+                    const boxUser = box.id.replace('stream-', '');
+                    if (!activeUsers.includes(boxUser)) box.remove();
+                });
+
+            } catch (e) { console.log("Sync error..."); }
+        }
+
+        // Gunakan HANYA SATU interval untuk semua update
+        setInterval(updateUI, 500);
+
+        function selectAccount(username) {
+            document.getElementById('acc').value = username;
+        }
+
+        async function execute() {
+            const payload = {
+                account: document.getElementById('acc').value,
+                target: document.getElementById('target').value,
+                action_type: document.getElementById('action').value,
+                amount: parseInt(document.getElementById('amt').value),
+                comment_text: document.getElementById('comm').value
+            };
+            await fetch('/api/run_task', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+        }
+
+        async function stopBot() {
+            const user = document.getElementById('acc').value;
+            await fetch('/api/stop_task', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ account: user }) });
+        }
+  
+        async function checkAccount(username) {
+            await fetch('/api/check_account', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username: username })
+            });
+        }
+
+        async function deleteAccount(username) {
+            if (confirm(`Hapus akun @${username} dan cookies-nya?`)) {
+                const res = await fetch('/api/delete_account', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: username })
+                });
+                const data = await res.json();
+                alert(data.message);
+                loadAccs(); // Refresh dropdown
+            }
+        }
+        async function logout() {
+    // 1. Hapus cookie di browser secara instan
+             document.cookie = "session_user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    
+    // 2. Beritahu server untuk menghapus session (Opsional tapi direkomendasikan)
+             try {
+                 await fetch('/logout');
+             } catch (e) {
+                 console.log("Logout server request ignored");
+             }
+
+    // 3. Arahkan kembali ke halaman login
+             window.location.href = "/login";
+        }
+        window.onload = () => {
+            loadAccs();
+        };
+    </script>
+</body>
+</html>
